@@ -683,7 +683,17 @@ html, body {
 }
 @media (max-width: 640px) {
   .progress-stats {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(140px, 1fr);
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .stat {
+    scroll-snap-align: start;
   }
   .brand-logo { height: 32px; }
   .header-inner { height: 64px; }
