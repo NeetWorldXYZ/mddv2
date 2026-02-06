@@ -10,6 +10,14 @@ const CONFIG = {
 
 const MESSAGE_MAX_CHARS = 140;
 
+// Determine API base for local vs production. You can override by setting window.__API_BASE__ before app.js loads.
+const API_BASE = (() => {
+  if (typeof window !== 'undefined' && window.__API_BASE__) return window.__API_BASE__;
+  const host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+  if (host.includes('localhost') || host.startsWith('127.')) return 'http://localhost:8787';
+  // Default production API domain (point this CNAME to your backend host)
+  return 'https://api.milliondollardummy.com';
+})();
 const currencyFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const dateFmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
 
@@ -423,7 +431,7 @@ function sortDonors(mode) {
 
 async function loadDonors() {
   try {
-    let res = await fetch('http://localhost:8787/api/donors', { cache: 'no-store' });
+    let res = await fetch(`${API_BASE}/api/donors`, { cache: 'no-store' });
     if (!res.ok) {
       res = await fetch('/data/donors.json', { cache: 'no-store' });
       if (!res.ok) throw new Error(`Failed to load donors: ${res.status}`);
@@ -641,7 +649,7 @@ async function startCheckout(payload) {
       const { socialX, socialTiktok, socialInstagram, socialYoutube, socialTwitch } = payload;
       localStorage.setItem('mdd_socials', JSON.stringify({ socialX, socialTiktok, socialInstagram, socialYoutube, socialTwitch }));
     } catch {}
-    const res = await fetch('http://localhost:8787/api/create-checkout-session', {
+    const res = await fetch(`${API_BASE}/api/create-checkout-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -692,7 +700,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const saved = localStorage.getItem('mdd_socials');
         if (saved) fallbackSocials = JSON.parse(saved || '{}');
       } catch {}
-      const res = await fetch('http://localhost:8787/api/confirm', {
+      const res = await fetch(`${API_BASE}/api/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ session_id: sessionId, socials: fallbackSocials })
