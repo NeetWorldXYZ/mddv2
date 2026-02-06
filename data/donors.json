@@ -1,0 +1,45 @@
+[
+  {
+    "name": "First Dummy",
+    "amountUsd": 10,
+    "date": "2026-01-15T14:30:00.000Z",
+    "message": "Kicking things off!"
+  },
+  {
+    "name": "Curious Dummy",
+    "amountUsd": 5,
+    "date": "2026-01-18T18:05:00.000Z",
+    "message": "How many dummies will it take?"
+  },
+  {
+    "name": "Anonymous Dummy",
+    "amountUsd": 1,
+    "date": "2026-01-20T12:00:00.000Z",
+    "message": ""
+  },
+  {
+    "name": "Generous Genius",
+    "amountUsd": 25,
+    "date": "2026-02-01T10:15:00.000Z",
+    "message": "Investing in premium brilliance."
+  },
+  {
+    "name": "Practical Philosopher",
+    "amountUsd": 7,
+    "date": "2026-01-28T09:00:00.000Z",
+    "message": "Because science."
+  },
+  {
+    "name": "Spreadsheet Wizard",
+    "amountUsd": 12,
+    "date": "2026-01-27T21:40:00.000Z",
+    "message": "Numbers don’t lie."
+  },
+  {
+    "name": "Coffee-Fueled Thinker",
+    "amountUsd": 3,
+    "date": "2026-01-26T08:30:00.000Z",
+    "message": "Smart move, obviously."
+  }
+]
+

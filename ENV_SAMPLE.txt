@@ -1,0 +1,14 @@
+Frontend
+FRONTEND_URL=http://localhost:8000
+
+Stripe
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+Supabase
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key
+
+Server
+PORT=8787
+
