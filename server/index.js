@@ -60,6 +60,11 @@ app.post('/api/create-checkout-session', async (req, res) => {
     if (!name || !amount || amount < 1) {
       return res.status(400).json({ error: 'invalid_request' });
     }
+    // Basic content moderation: block racist/offensive content
+    const banned = getBannedChecker();
+    if (banned(name) || banned(message || '')) {
+      return res.status(400).json({ error: 'offensive_content' });
+    }
     const commonMeta = {
       donor_name: String(name).slice(0, 120),
       donor_message: String(message || '').slice(0, 500),
@@ -115,10 +120,14 @@ app.post('/api/confirm', async (req, res) => {
         piMeta = (pi && pi.metadata) || {};
       }
     } catch {}
-    const name = session.metadata?.donor_name || 'Anonymous Dummy';
-    const message = session.metadata?.donor_message || '';
+    let name = session.metadata?.donor_name || 'Anonymous Dummy';
+    let message = session.metadata?.donor_message || '';
     const amountUsd = Math.round(Number(session.amount_total || 0) / 100);
     const date = new Date().toISOString();
+    // Sanitize again before inserting
+    const banned = getBannedChecker();
+    if (banned(name)) name = 'Anonymous Dummy';
+    if (banned(message)) message = '';
     const payloadBase = { name, amountusd: amountUsd, message, date };
     const metaSocials = {
       social_x: session.metadata?.social_x || piMeta.social_x || null,
@@ -189,3 +198,28 @@ app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
 
+// --- Content moderation helpers ---
+function getBannedChecker() {
+  const WORDS = [
+    'nigger','nigga','chink','spic','wetback','kike','fag','faggot','tranny','retard','retarded',
+    'coon','gook','porchmonkey','jigaboo','zipperhead','raghead','sandnigger','towelhead',
+    'whitepower','white supremacy','heilhitler','siegheil','gas the jews','kill all jews',
+    'lynch','monkey person','go back to','great replacement',
+    'fuck','motherfucker','cunt'
+  ];
+  const map = { '0':'o','1':'i','!':'i','3':'e','4':'a','@':'a','$':'s','5':'s','7':'t','+':'t' };
+  function norm(s = '') {
+    s = String(s).toLowerCase().replace(/[0-9!3@4$57+]/g, (m) => map[m] || '');
+    const spaced = ` ${s.replace(/[\W_]+/g, ' ').trim()} `;
+    const nospace = spaced.replace(/\s+/g, '');
+    return { spaced, nospace };
+  }
+  return function isBanned(input) {
+    if (!input) return false;
+    const { spaced, nospace } = norm(input);
+    return WORDS.some(term => {
+      const t = term.toLowerCase();
+      return spaced.includes(` ${t} `) || nospace.includes(t.replace(/\s+/g,''));
+    });
+  };
+}
