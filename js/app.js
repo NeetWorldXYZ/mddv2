@@ -18,6 +18,32 @@ const API_BASE = (() => {
   // Default production API domain (point this CNAME to your backend host)
   return 'https://api.milliondollardummy.com';
 })();
+// Simple denylist for racist/offensive words (lowercase). Extend as needed.
+// Notes: We normalize input heavily before checking, to catch obfuscations.
+const BANNED_WORDS = [
+  'nigger','nigga','chink','spic','wetback','kike','fag','faggot','tranny','retard','retarded',
+  'coon','gook','porchmonkey','jigaboo','zipperhead','raghead','sandnigger','towelhead',
+  'whitepower','white supremacy','heilhitler','siegheil','gas the jews','kill all jews',
+  'lynch','monkey person','go back to','great replacement',
+  'fuck','motherfucker','cunt'
+];
+function normalizeForFilter(input) {
+  const map = { '0':'o','1':'i','!':'i','3':'e','4':'a','@':'a','$':'s','5':'s','7':'t','+':'t' };
+  let s = (input || '').toLowerCase();
+  s = s.replace(/[0-9!3@4$57+]/g, (m) => map[m] || '');
+  s = s.replace(/[\W_]+/g, ' ');
+  const noSpace = s.replace(/\s+/g, '');
+  return { spaced: ` ${s.trim()} `, nospace: noSpace };
+}
+function containsBanned(input) {
+  if (!input) return false;
+  const { spaced, nospace } = normalizeForFilter(input);
+  for (const term of BANNED_WORDS) {
+    const t = term.toLowerCase();
+    if (spaced.includes(` ${t} `) || nospace.includes(t.replace(/\s+/g,''))) return true;
+  }
+  return false;
+}
 const currencyFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const dateFmt = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
 
@@ -622,6 +648,10 @@ function wireInteractions() {
       const socialTwitch = document.getElementById('socialTwitch')?.value?.trim() || '';
       if (!name) {
         if (err) { err.textContent = 'Please enter your name.'; err.hidden = false; }
+        return;
+      }
+      if (containsBanned(name) || containsBanned(message)) {
+        if (err) { err.textContent = 'Please remove offensive language from your name or message.'; err.hidden = false; }
         return;
       }
       if (Number.isNaN(amount) || amount < 1) {
